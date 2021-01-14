@@ -25,8 +25,8 @@ class App extends Component {
       const cookies = document.cookie.split(';');
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i].trim();
-        if(cookie.substring(0, name.length +1) === (name + '=')){
-          cookieValue = decodeURIComponent(cookie.substring(name.length +1));
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
           break;
         }
       }
@@ -71,8 +71,14 @@ class App extends Component {
     console.log("Item:", this.state.activeItem)
 
     let csrftoken = this.getCookie('csrftoken')
+    let url = `http://127.0.0.1:8000/api/task-create/`
 
-    const url = 'http://127.0.0.1:8000/api/task-create/'
+    if (this.state.editing === true) {
+      url = `http://127.0.0.1:8000/api/task-update/${this.state.activeItem.id}/`
+      this.setState({
+        editing:false
+      })
+    }
     fetch(url, {
       method: 'POST',
       headers: {
@@ -92,8 +98,16 @@ class App extends Component {
     }).catch(err => console.log('ERROR:', err))
   }
 
+  startEdit(task) {
+    this.setState({ 
+      activeItem: task, 
+      editing: true
+    })
+  }
+
   render() {
     const tasks = this.state.todoList
+    const self = this
 
     return (
       <div className="container">
@@ -119,7 +133,7 @@ class App extends Component {
                       <span>{task.title}</span>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <button className="btn btn-sm btn-outline-info">Edit</button>
+                      <button onClick={()=> self.startEdit(task)} className="btn btn-sm btn-outline-info">Edit</button>
                     </div>
                     <div style={{ flex: 1 }}>
                       <button className="btn btn-sm btn-outline-danger delete">Delete</button>
