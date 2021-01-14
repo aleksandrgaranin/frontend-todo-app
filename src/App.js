@@ -14,6 +14,9 @@ class App extends Component {
       editing: false
     }
     this.fetchTasks = this.fetchTasks.bind(this)
+    this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+
   }
 
   componentWillMount() {
@@ -33,6 +36,41 @@ class App extends Component {
       })
   }
 
+  handleChange(event) {
+    const name = event.target.name
+    const value = event.target.value
+    console.log(name, value)
+
+    this.setState({
+      activeItem: {
+        ...this.state.activeItem,
+        title: value
+      }
+    })
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    console.log("Item:", this.state.activeItem)
+    const url = 'http://127.0.0.1:8000/api/task-create/'
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify(this.state.activeItem)
+    }).then(res => {
+      this.fetchTasks()
+      this.setState({
+        activeItem: {
+          id: null,
+          title: '',
+          completed: false
+        }
+      })
+    }).catch(err => console.log('ERROR:', err))
+  }
+
   render() {
     const tasks = this.state.todoList
 
@@ -40,10 +78,10 @@ class App extends Component {
       <div className="container">
         <div id="task-container">
           <div id="form-wrapper">
-            <form if="form">
+            <form if="form" onSubmit={this.handleSubmit}>
               <div className="flex-wrapper">
                 <div style={{ flex: 6 }}>
-                  <input className="form-control" id="title" type="text" name="title" placeholder="Add task"></input>
+                  <input onChange={this.handleChange} className="form-control" id="title" type="text" name="title" placeholder="Add task"></input>
                 </div>
                 <div style={{ flex: 1 }}>
                   <input id="submit" className="btn btn-warning" type="submit" name="Add"></input>
