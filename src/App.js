@@ -16,8 +16,25 @@ class App extends Component {
     this.fetchTasks = this.fetchTasks.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
-
+    this.getCookie = this.getCookie.bind(this)
   }
+
+  getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if(cookie.substring(0, name.length +1) === (name + '=')){
+          cookieValue = decodeURIComponent(cookie.substring(name.length +1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+
 
   componentWillMount() {
     this.fetchTasks()
@@ -52,11 +69,15 @@ class App extends Component {
   handleSubmit(event) {
     event.preventDefault();
     console.log("Item:", this.state.activeItem)
+
+    let csrftoken = this.getCookie('csrftoken')
+
     const url = 'http://127.0.0.1:8000/api/task-create/'
     fetch(url, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
+        'X-CSRFToken': csrftoken
       },
       body: JSON.stringify(this.state.activeItem)
     }).then(res => {
@@ -81,7 +102,7 @@ class App extends Component {
             <form if="form" onSubmit={this.handleSubmit}>
               <div className="flex-wrapper">
                 <div style={{ flex: 6 }}>
-                  <input onChange={this.handleChange} className="form-control" id="title" type="text" name="title" placeholder="Add task"></input>
+                  <input onChange={this.handleChange} value={this.state.activeItem.title} className="form-control" id="title" type="text" name="title" placeholder="Add task"></input>
                 </div>
                 <div style={{ flex: 1 }}>
                   <input id="submit" className="btn btn-warning" type="submit" name="Add"></input>
