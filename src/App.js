@@ -19,6 +19,7 @@ class App extends Component {
     this.getCookie = this.getCookie.bind(this);
     this.startEdit = this.startEdit.bind(this);
     this.deleteItem = this.deleteItem.bind(this);
+    this.strikeUnstrike = this.strikeUnstrike.bind(this)
   }
 
   getCookie(name) {
@@ -111,15 +112,31 @@ class App extends Component {
     const csrftoken = this.getCookie('csrftoken')
     console.log(task)
 
-    fetch(`http://127.0.0.1:8000/api/task-delete/${task.id}`, {
+    fetch(`http://127.0.0.1:8000/api/task-delete/${task.id}/`, {
       method: 'DELETE',
       headers: {
         'Content-type': 'application/json',
         'X-CSRFToken': csrftoken
       }
-    }).then(res=>{
+    }).then(res => {
       this.fetchTasks()
-    })
+    }).catch(err => console.log('ERROR:', err))
+  }
+
+  strikeUnstrike(task) {
+    task.completed = !task.completed
+    console.log('Task:', task.completed)
+    const csrftoken = this.getCookie('csrftoken')
+    fetch(`http://127.0.0.1:8000/api/task-update/${task.id}/`, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify(task)
+    }).then(res => {
+      this.fetchTasks()      
+    }).catch(err => console.log('ERROR:', err))
   }
 
   render() {
@@ -146,8 +163,12 @@ class App extends Component {
               tasks.map((task, index) => {
                 return (
                   <div key={index} className="task-wrapper flex-wrapper">
-                    <div style={{ flex: 7 }}>
-                      <span>{task.title}</span>
+                    <div onClick={() => self.strikeUnstrike(task)} style={{ flex: 7 }}>
+                      {
+                        !task.completed ? (<span>{task.title}</span>)
+                          : (<strike>{task.title}</strike>)
+                      }
+
                     </div>
                     <div style={{ flex: 1 }}>
                       <button onClick={() => self.startEdit(task)} className="btn btn-sm btn-outline-info">Edit</button>
